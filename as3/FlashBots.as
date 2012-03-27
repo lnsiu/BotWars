@@ -3,11 +3,7 @@ package  {
 	/*
 	This is the "bot wars arena" Class that updates the bots
 	
-	Disclaimer
 	Created by lnsiu for Kirupa battle. v1 - 1, 
-	Free for all usage at kirupa.com by its members, all other rights reserved.
-	You may edit, change or otherwise alter the material and repost at kirupa.com, as long as this disclaimer is present.
-	You may not use it on any other site or context. 
 	
 	/lnsiu 2012
 	
@@ -90,7 +86,7 @@ package  {
 				botClassRef[i].updateBot();
 				
 				//check if allowed to fire
-				if(botClassRef[i].reloadCountDown == 0)
+				if(botClassRef[i].reloadCountDown <= 0)
 				{
 					
 					//fire bullets
