@@ -18,7 +18,7 @@ They are fearsome, but not unbeatable...
 
 How to:
 
-Download the three files below, place all .as files in the same folder and load FlashBot.as as the documentClass. Run the project. You should have two bots fighting each other.
+Download the three as3 files, place all .as files in the same folder and load FlashBot.as as the documentClass. Run the project. You should have two bots fighting each other.
 Rewrite one of the bots classes to suit your ideas about the best AI ideas. Submit in this thread and we will figure out a fair way to test your BOT later.
 
 RULES:
