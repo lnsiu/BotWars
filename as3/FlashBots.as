@@ -3,7 +3,8 @@ package  {
 	/*
 	This is the "bot wars arena" Class that updates the bots
 	
-	Created by lnsiu for Kirupa battle. v1 - 1, 
+	Created by lnsiu for Kirupa battle. v1 - 1,
+	http://www.kirupa.com/forum/showthread.php?371555-BOT-wars!
 	
 	/lnsiu 2012
 	
@@ -53,20 +54,31 @@ package  {
 		public var foodArray:Array = new Array();
 				
 		//Bots
-		public var botClassRef:Array = [new lnsiu_AIBot_01(),new lnsiu_AIBot_02()];
+		//public var botClassRef:Array = [new lnsiu_AIBot_01(),new lnsiu_AIBot_02(),new lnsiu_AIBot_03()];
+		public var botClassRef:Array = [new lnsiu_AIBot_01(),new lnsiu_AIBot_03()];
 		public var displayBots:Array = new Array(botClassRef.length);
 		public var offsetInitBotPlacement:Number = 10;
-		public var startPositions:Array = [[offsetInitBotPlacement,offsetInitBotPlacement],[theStageWidth-offsetInitBotPlacement,theStageHeight-offsetInitBotPlacement]];
+		public var startPositions:Array = [
+			[offsetInitBotPlacement,offsetInitBotPlacement],
+			[theStageWidth-offsetInitBotPlacement,theStageHeight-offsetInitBotPlacement],
+			[offsetInitBotPlacement, theStageHeight-offsetInitBotPlacement],
+			[theStageWidth-offsetInitBotPlacement, offsetInitBotPlacement]
+		];
 		
 		//bullets
 		public var reloadCount:Number = 10;
 		public var bulletsArr:Array = new Array();
 		
+		//interface
+		public var screenText:TextField = new TextField();
+		
 		
 		public function FlashBots():void
 		{
+			trace("FlashBots called")
 			// constructor code
 			initBots();
+			createScreenText();
 			foodArray[foodArray.length] = placeFood(theStageWidth/2,theStageHeight/2);
 			
 			//activate onEnterLoop and
@@ -75,65 +87,66 @@ package  {
 		
 		private function bulletTime(e:Event):void 
 		{
-			//for fairness reason, reverse the botClass array
-			botClassRef.reverse();
-			displayBots.reverse();
+			//for fairness reason, rotate the botClass array, needs to be rotated if more than two players
+			rotateArray([botClassRef,displayBots]);
 			
 			//update each update function
 			for(var i:uint = 0; i< botClassRef.length; i++)
 			{
+				var botRef:Object = botClassRef[i];
+				
 				//update each bot ai
-				botClassRef[i].updateBot();
+				botRef.updateBot();
 				
 				//check if allowed to fire
-				if(botClassRef[i].reloadCountDown <= 0)
+				if(botRef.reloadCountDown <= 0)
 				{
 					
 					//fire bullets
-					if(botClassRef[i].doFire && botClassRef[i].myEnergy >= 10)
+					if(botRef.doFire && botRef.myEnergy >= 10)
 					{
-						botClassRef[i].myEnergy -= fireCost;
+						botRef.myEnergy -= fireCost;
 							
-						var orgx:Number = botClassRef[i].myx;
-						var orgy:Number = botClassRef[i].myy;
-						var dirx:Number = botClassRef[i].fireDirX;
-						var diry:Number = botClassRef[i].fireDirY;
+						var orgx:Number = botRef.myx;
+						var orgy:Number = botRef.myy;
+						var dirx:Number = botRef.fireDirX;
+						var diry:Number = botRef.fireDirY;
 						var bullet:MovieClip = bulletsArr[bulletsArr.length] = fireBullet(orgx, orgy, dirx, diry);
 						
 						//add name flag for bots to distinguis between their own and hostile bullets
-						bullet.nameflag = botClassRef[i].botName;
+						bullet.nameflag = botRef.botName;
 						
 						//fast forward bullet outside mc
 						bullet.x += Math.cos(bullet.rotation)*12;
 						bullet.y += Math.sin(bullet.rotation)*12;
 						
-						botClassRef[i].reloadCountDown = reloadCount;
+						botRef.reloadCountDown = reloadCount;
 					}
 				}else{
-					botClassRef[i].reloadCountDown -=1;
+					botRef.reloadCountDown -=1;
 				}
 				
 				//move bots
-				var movebotx:Number = botClassRef[i].movex;
-				var moveboty:Number = botClassRef[i].movey;
+				var movebotx:Number = botRef.movex;
+				var moveboty:Number = botRef.movey;
 				//var moveDist:Number = Math.abs(movebotx)+Math.abs(moveboty);
 				
 				var theDist:Number = pointDistance(displayBots[i].x,displayBots[i].x + movebotx,displayBots[i].y, displayBots[i].y + moveboty);
-				trace(theDist);
-				if(theDist <=2 && botClassRef[i].myEnergy > theDist)
+				//trace(theDist);
+				if(theDist <=2 && botRef.myEnergy > theDist)
 				{
-					botClassRef[i].myx += movebotx;
-					botClassRef[i].myy += moveboty;
+					botRef.myx += movebotx;
+					botRef.myy += moveboty;
 				}
 				
 				//check bounds and move a bot to stage if he is wondering of
-				checkBotArenaBounds(botClassRef[i]);
+				checkBotArenaBounds(botRef);
 				
 				//update foodArray in bot
-				botClassRef[i].foodArray = foodArray
+				botRef.foodArray = foodArray
 				
 				//remove move energy
-				botClassRef[i].myEnergy -= theDist;
+				botRef.myEnergy -= theDist;
 			}
 			
 			
@@ -203,9 +216,7 @@ package  {
 							removeChild(bullRef2);
 							return;
 						}
-						
 					}
-					
 				}
 				
 				var removeBull:Boolean = false;
@@ -227,7 +238,7 @@ package  {
 				}
 				if(removeBull)
 				{
-					trace("removed bullet");
+					//trace("removed bullet");
 					var buller:MovieClip = bulletArrRef;
 					bulletsArr.splice(i,1);
 					removeChild(buller);
@@ -240,35 +251,69 @@ package  {
 			
 			for (var i:int = 0; i < botClassRef.length; i++) 
 			{
+				//is someone dead? if not do nothing.
 				if(botClassRef[i].myEnergy < 0)
 				{
-					//atleast one is dead
-					//terminate loop
-					
-					removeEventListener(Event.ENTER_FRAME,bulletTime);
+					//atleast one bot is dead
+					//who has the lowest score?
+					var lowestScore:Number = 0;
+					var botIndex:Number = 0;
+					for (var k:int = 0; k < botClassRef.length; k++) 
+					{
+						var energy:Number = botClassRef[k].myEnergy;
+						if(energy < lowestScore)
+						{
+							lowestScore = energy;
+							botIndex = k;
+						}
+					}
 					
 					//announce score
-					var scoreString:String = "Game Over!\n";
+					var scoreString:String;
+					if(botClassRef.length == 2 )
+					{
+						scoreString = "Game Over!\n";
+					}else{
+						scoreString = "One Down!\n";
+					}
+					
 					for (var j:int = 0; j < botClassRef.length; j++) 
 					{
 						scoreString += botClassRef[j].botName + " - energy left: " + Math.round(botClassRef[j].myEnergy) + "\n";
 					}
-					createScreenText(scoreString);
+					
+					updateScreenText(scoreString);
+					
+					//remove the lowest scoring bot from the display list and the classref list
+					displayBots.splice(botIndex, 1);
+					botClassRef.splice(botIndex, 1);
+					
+					//update botlist
+					updateBotClassRefBotArray();
+					
+					//terminate loop if there is only one bot left
+					if(botClassRef.length == 1)
+					{
+						removeEventListener(Event.ENTER_FRAME,bulletTime);
+					}					
+					
 					return;					
 				}
 			}
-			
+		}
+		
+		private function createScreenText():void
+		{
+			screenText.multiline = true;
+			screenText.x = 10;
+			screenText.y = 10;
+			addChild(screenText);
 		}
 
-		private function createScreenText(theString:String):void
+		private function updateScreenText(theString:String):void
 		{
-			var myText:TextField = new TextField();
-			myText.multiline = true;
-			myText.text = theString;
-			myText.x = 10;
-			myText.y = 10;
-			myText.width = myText.textWidth + 10; 
-			addChild(myText);
+			screenText.text = theString;			
+			screenText.width = screenText.textWidth + 10; 
 		}
 		
 		private function fireBullet(orgx:Number,orgy:Number,dirx:Number, diry:Number):MovieClip
@@ -323,6 +368,16 @@ package  {
 			if(obj.myy > theStageHeight){ obj.myy = theStageHeight;}
 		}
 		
+		private function rotateArray(Arr:Array):void
+		{
+			//takes an array of arrays and rotates each array
+			for (var i:int = 0; i < Arr.length; i++) 
+			{
+				var tempval:Object = Arr[i].shift();
+				Arr[i].push(tempval);
+			}
+		}
+		
 		private function initBots():void
 		{
 			//Set up bots 
@@ -345,9 +400,14 @@ package  {
 				displayBots[i] = filledCircle(botRef.skinColor);
 				displayBots[i].x = botRef.myx;
 				displayBots[i].y = botRef.myy;
-				
-				
 			}
+			
+			updateBotClassRefBotArray();
+		}
+		
+		private function updateBotClassRefBotArray():void
+		{
+			//this function updates the botArray of each bot to reflect all opponents
 			for (var z:int = 0; z < botClassRef.length; z++) 
 			{
 				var tempArr:Array = new Array();
@@ -362,7 +422,6 @@ package  {
 				
 				botClassRef[z].botArray = tempArr;	
 			}
-			
 		}
 		
 		private function placeFood(x:Number,y:Number):MovieClip
