@@ -19,7 +19,7 @@ They are fearsome, but not unbeatable...
 How to:
 
 Download the three as3 files, place all .as files in the same folder and load FlashBot.as as the documentClass. Run the project. You should have two bots fighting each other.
-Rewrite one of the bots classes to suit your ideas about the best AI ideas. Submit in this thread and we will figure out a fair way to test your BOT later.
+Rewrite one of the bots classes to suit your ideas about the best AI. Submit in the kirupa.com thread and we will figure out a fair way to test your BOT later.
 
 RULES:
 
@@ -34,7 +34,7 @@ RULES:
 -food containing energy units is placed after 200 turns.
 -food contains 1000 units and will be received once "eaten". 
 -shooting on food will decrease the foodvalue with 25 units
--Your AI should only use the public vars provided in the bot-classes in the attached files and not take other routes.
+-Your AI should only use the public vars provided in the bot-classes for interaction with the war zone.
 
 TIPS:
 
