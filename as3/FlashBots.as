@@ -54,8 +54,8 @@ package  {
 		public var foodArray:Array = new Array();
 				
 		//Bots
-		//public var botClassRef:Array = [new lnsiu_AIBot_01(),new lnsiu_AIBot_02(),new lnsiu_AIBot_03()];
-		public var botClassRef:Array = [new lnsiu_AIBot_01(),new lnsiu_AIBot_03()];
+		public var botClassRef:Array = [new lnsiu_AIBot_01(),new lnsiu_AIBot_02(),new lnsiu_AIBot_03(),new lnsiu_AIBot_04()];
+		//public var botClassRef:Array = [new lnsiu_AIBot_04(),new lnsiu_AIBot_03()];
 		public var displayBots:Array = new Array(botClassRef.length);
 		public var offsetInitBotPlacement:Number = 10;
 		public var startPositions:Array = [
@@ -69,8 +69,12 @@ package  {
 		public var reloadCount:Number = 10;
 		public var bulletsArr:Array = new Array();
 		
-		//interface
+		//user interface
 		public var screenText:TextField = new TextField();
+		
+		//timers
+		//public var updateTimeStamp:Timer = new Timer();
+		//updateTimeStamp.start();
 		
 		
 		public function FlashBots():void
@@ -96,7 +100,15 @@ package  {
 				var botRef:Object = botClassRef[i];
 				
 				//update each bot ai
+				//wrapp the update and take the execution cost into account.
+				//the purpose of this is to equal out long exectuion time from short and promote code that execute fast.
+				//updateTimeStamp.
+				
 				botRef.updateBot();
+				
+				//updateTimeStamp = new Date();
+				//var timeDiff:Number = updateTimeStamp.getTime() - time;
+				//trace(timeDiff);
 				
 				//check if allowed to fire
 				if(botRef.reloadCountDown <= 0)
