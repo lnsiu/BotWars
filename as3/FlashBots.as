@@ -36,7 +36,6 @@ package  {
 	public class FlashBots extends MovieClip {
 		
 		//Stage
-		//var theFrameRate:Number 	= 60;
 		public var theStageWidth:Number 	= 500;
 		public var theStageHeight:Number 	= 500;
 		public var loopCounter:Number = 0;
@@ -44,7 +43,7 @@ package  {
 		//Gamesettings
 		public var fireCost:Number 	= 15;
 		public var damageCost:Number = 150;
-		public var foodDamageCost:Number = 25;
+		public var foodDamageCost:Number = 35;
 		public var maxTotalmove:Number = 2;		
 		
 		//Food settings
@@ -73,13 +72,15 @@ package  {
 		public var screenText:TextField = new TextField();
 		
 		//timers
-		//public var updateTimeStamp:Timer = new Timer();
+		public var updateTimeStamp:int;// = getTimer();
 		//updateTimeStamp.start();
 		
 		
 		public function FlashBots():void
 		{
-			trace("FlashBots called")
+			//trace("FlashBots called")
+			//set Arena color
+			stage.color = 0xe8e8e8;
 			// constructor code
 			initBots();
 			createScreenText();
@@ -99,16 +100,7 @@ package  {
 			{
 				var botRef:Object = botClassRef[i];
 				
-				//update each bot ai
-				//wrapp the update and take the execution cost into account.
-				//the purpose of this is to equal out long exectuion time from short and promote code that execute fast.
-				//updateTimeStamp.
-				
-				botRef.updateBot();
-				
-				//updateTimeStamp = new Date();
-				//var timeDiff:Number = updateTimeStamp.getTime() - time;
-				//trace(timeDiff);
+				updateBot(botRef);
 				
 				//check if allowed to fire
 				if(botRef.reloadCountDown <= 0)
@@ -181,16 +173,30 @@ package  {
 			checkIfFoodFound();
 		}
 		
+		private function updateBot(botRef:Object):void
+		{
+			//update each bot ai
+			//wrapp the update and take the execution cost into account.
+			//the purpose of this is to equal out long exectuion time from short and promote code that execute fast.
+			updateTimeStamp = getTimer();
+			
+			botRef.updateBot();
+			
+			var timeDiff:Number = getTimer() - updateTimeStamp;
+			botRef.myEnergy -= timeDiff/10;
+		}
+		
 		private function updateAllBullets():void
 		{
 			for (var i:int = 0; i < bulletsArr.length; i++) 
 			{
 				var bulletArrRef:MovieClip = bulletsArr[i];
 				
-				for (var j:int = 0; j < 5; j++) 
-				{
-					bulletArrRef.x += Math.cos(bulletArrRef.rotation)*0.5;
-					bulletArrRef.y += Math.sin(bulletArrRef.rotation)*0.5;
+				
+				//for (var j:int = 0; j < 1; j++) 
+				//{
+					bulletArrRef.x += Math.cos(bulletArrRef.rotation)*2.5;
+					bulletArrRef.y += Math.sin(bulletArrRef.rotation)*2.5;
 					
 					//check if bullet hits bot
 					for (var k:int = 0; k < displayBots.length; k++) 
@@ -212,7 +218,7 @@ package  {
 					{
 						if(bulletArrRef.hitTestObject(foodArray[i2]))
 						{
-							foodArray[i2].foodEnergy -= damageCost;
+							foodArray[i2].foodEnergy -= foodDamageCost;
 							
 							//if food is zero, remove food
 							if(foodArray[i2].foodEnergy < 0 )
@@ -229,7 +235,7 @@ package  {
 							return;
 						}
 					}
-				}
+				//}
 				
 				var removeBull:Boolean = false;
 				if(bulletArrRef.x < 0 )
@@ -280,7 +286,7 @@ package  {
 						}
 					}
 					
-					//announce score
+					//set string for announcing score
 					var scoreString:String;
 					if(botClassRef.length == 2 )
 					{
@@ -294,12 +300,12 @@ package  {
 						scoreString += botClassRef[j].botName + " - energy left: " + Math.round(botClassRef[j].myEnergy) + "\n";
 					}
 					
+					//announce 
 					updateScreenText(scoreString);
 					
-					//remove the lowest scoring bot from the display list and the classref list
-					displayBots.splice(botIndex, 1);
-					botClassRef.splice(botIndex, 1);
-					
+					//replace dead bot with food and remove from arrays.
+					deadBotManagement(botIndex);
+										
 					//update botlist
 					updateBotClassRefBotArray();
 					
@@ -313,6 +319,30 @@ package  {
 				}
 			}
 		}
+		
+		private function deadBotManagement(botIndex:Number):void
+		{
+			//this is part of multiplayer gameplay, not so much one on one.
+			//replacing a bot with food wont help in duell mode.
+			// so, check if there is more than one bot left i.e array length of three before array elimination
+			if(displayBots.length >=3)
+			{
+				var x:Number = displayBots[botIndex].x;
+				var y:Number = displayBots[botIndex].y;
+				
+				//place food on bot location
+				placeFood(x,y);
+				
+				//remove the dead bot on stage
+				removeChild(displayBots[botIndex]);
+				
+			}
+			
+			//remove the lowest scoring bot from the display list and the classref list
+			displayBots.splice(botIndex, 1);
+			botClassRef.splice(botIndex, 1);
+			
+		}		
 		
 		private function createScreenText():void
 		{
@@ -337,7 +367,7 @@ package  {
 			bullet.x = orgx;
 			bullet.y = orgy;
 			
-			var rot:Number = Math.atan2( orgy - diry, orgx - dirx) / Math.PI * 180 -90;
+			var rot:Number = Math.atan2( orgy - diry, orgx - dirx) / Math.PI * 180 - 90;
 			bullet.rotation = (rot - 90)* Math.PI/180;
 			
 			//bullet manages itself.

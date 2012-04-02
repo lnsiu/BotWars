@@ -8,7 +8,7 @@ package  {
 	Created by lnsiu for Kirupa battle. v1 - 1
 	Free for all usage
 	
-	
+	info:
 	PiggyBack bot will try to conserve energy, go so close that it can't be hurt by the opponents bullets, 
 	and if there are other oppenents. Let the "piggy" take the fall. If the Piggy has an advantage to reach food. Shot the food. 
 	*/
@@ -79,27 +79,92 @@ package  {
 			//BOT fire
 			if (foodArray.length != 0) 
 			{
-				//there is food. shot it.
-				var closestfoodIndex:Number = 0;
-				var closestfood:Number = 1000;
-				
-				for (var i:int = 0; i < foodArray.length; i++) 
+				//there is food. shot it. unless I am closest, then go to the food
+				if(iAmClosestToFood())
 				{
-					var distance:Number = pointDistance(myx, foodArray[i].x , myy, foodArray[i].y);
-					if(distance < closestfood)
+					// go to food
+					var closestfoodIndex:Number = 0;
+					var closestfood:Number = 1000;
+					
+					for (var i:int = 0; i < foodArray.length; i++) 
 					{
-						closestfoodIndex = i;
-						closestfood = distance;
+						var distance:Number = pointDistance(myx, foodArray[i].x , myy, foodArray[i].y);
+						if(distance < closestfood)
+						{
+							closestfoodIndex = i;
+							closestfood = distance;
+						}
 					}
+					//move maximum distance.
+					var x2:Number = foodArray[closestfoodIndex].x;
+					var y2:Number = foodArray[closestfoodIndex].y;
+					
+					//closestfood
+					movex = 1.4*(x2 -myx)/closestfood;
+					movey = 1.4*(y2 -myy)/closestfood;
 				}
-				//fire half the time
-				doFire = !doFire;
-				
-				fireDirX = foodArray[closestfoodIndex].x;
-				fireDirY = foodArray[closestfoodIndex].y;
+				else
+				{
+					shotTheFood();
+				}
 			}else{
 				doFire = false;
 			}
+		}
+		
+		private function iAmClosestToFood():Boolean
+		{
+			//calculate my shortest distance to the food
+			var closestfoodIndex:Number = 0;
+			var closestfood:Number = 1000;
+			
+			for (var i:int = 0; i < foodArray.length; i++) 
+			{
+				var distance:Number = pointDistance(myx, foodArray[i].x , myy, foodArray[i].y);
+				if(distance < closestfood)
+				{
+					closestfoodIndex = i;
+					closestfood = distance;
+				}
+			}
+			
+			//calculate all the bots distance to the food.
+			var closestBotIndex:Number = 0;
+			var closestBot:Number = 0;
+			
+			for (var j:int = 0; j < botArray.length; j++) 
+			{
+				var botFoodDistance:Number = pointDistance(	botArray[j].x, foodArray[closestfoodIndex].x, botArray[j].y, foodArray[closestfoodIndex].y);
+				
+				if(botFoodDistance<closestfood)
+				{
+					//exit loop and return false...
+					return(false);
+				}
+			}
+					//...else return true
+			return(true);
+		}
+		
+		private function shotTheFood():void
+		{
+			var closestfoodIndex:Number = 0;
+			var closestfood:Number = 1000;
+			
+			for (var i:int = 0; i < foodArray.length; i++) 
+			{
+				var distance:Number = pointDistance(myx, foodArray[i].x , myy, foodArray[i].y);
+				if(distance < closestfood)
+				{
+					closestfoodIndex = i;
+					closestfood = distance;
+				}
+			}
+			//fire half the time
+			doFire = !doFire;
+			
+			fireDirX = foodArray[closestfoodIndex].x;
+			fireDirY = foodArray[closestfoodIndex].y;
 		}
 		
 		private function findClosestBot():Array
@@ -132,8 +197,6 @@ package  {
 			ys = ys * ys;
 			
 			return Math.sqrt( xs + ys );
-		}
-		
+		}		
 	}
-	
 }
