@@ -41,3 +41,14 @@ TIPS:
 -Aiming is done on a location basis. Aiming at coordinate 0,0 will fire a bullet at 0,0 from you bots location.
 -Movement is relatively defined and exceeding the allowed amount of 2 units in distance will ignore the desired movement.
 -Moving outside the bounds of 500x500 will gently force you back to the war area. No penalty.
+
+GITHUB TASKS:
+
+create motion prediction class that predicts opponents motion.
+	-record motion for each opponent
+	-project previous motion to future motion
+	-vary outcome by randomize order of previous motion
+	-collect outcome on a prediction map
+
+create aiming class that shoots at the correct position according to motion prediction map.
+	-predict best possible outcome of bullet based on prediction map
